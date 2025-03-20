@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chat Application - Chat</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header>
+    <div class="navbar">
+      <h1>Chat Application</h1>
+      <input type="search" id="friendSearch" placeholder="Search friends...">
+      <nav>
+        <a href="profile.html">Profile</a>
+        <a href="#" id="logoutBtn">Logout</a>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <!-- Sidebar for contacts and friend list -->
+    <aside class="sidebar">
+      <h2>Contacts</h2>
+      <ul id="contactsList">
+        <!-- Dynamically loaded contacts -->
+      </ul>
+      <button id="addFriendBtn">Add Friend</button>
+    </aside>
+    <!-- Main chat area -->
+    <section class="chat-area">
+      <div id="chatHeader">
+        <h2>Chat with: <span id="activeFriend">Select a friend</span></h2>
+      </div>
+      <div id="chatWindow">
+        <!-- Chat messages will be dynamically loaded here -->
+      </div>
+      <div class="chat-input">
+        <textarea id="messageInput" placeholder="Type your message here..."></textarea>
+        <button id="sendMsgBtn">Send</button>
+      </div>
+    </section>
+  </main>
+  <!-- External JavaScript files -->
+  <script src="js/main.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>
