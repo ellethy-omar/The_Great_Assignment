@@ -24,9 +24,17 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
 });
 
+app.get('/register', function(req, res) {
+  res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+});
+
 // Register The big API container
 const integrationRoutes = require('./routes/integrationRouter')
 app.use('/api', integrationRoutes);
+
+app.get('/chat', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public/html', 'chat.html'));
+});
 
 // Create an HTTP server using the Express app
 const server = http.createServer(app);
@@ -43,10 +51,6 @@ wss.on('connection', (ws, request) => {
   WebSocketRoutes(ws, request);
 });
 
-const { requireAuth } = require('./middleware/requireAuth');
-app.get('/chat', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'protected', 'chat.html'));
-});
 
 app.use((req, res, next) => {
   res.status(404).json({ error: 'Resource not found' });

@@ -84,6 +84,12 @@ const login = async (req, res) => {
         res.status(500).json({ error: 'Server error during login' });
     }
 };
+
+// In controllers/authController.js (or a new verify controller)
+const verifyToken = (req, res) => {
+    // If requireAuth passed, req.user will be available.
+    res.status(200).json({ message: 'Token is valid', user: req.user });
+};
   
 
-module.exports = { register, login };
+module.exports = { register, login, verifyToken };

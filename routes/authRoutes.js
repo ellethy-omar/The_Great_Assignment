@@ -1,7 +1,9 @@
 const router = require('express').Router(); // require express and use the Router method to create a router object
-const { register, login } = require('../controllers/authController');
+const { register, login, verifyToken } = require('../controllers/authController');
+const {requireAuth} = require('../middleware/requireAuth');
 
-router.post('/login', login); // create a POST route for the login endpoint that calls the UserLogin function
-router.post('/register', register); // create a POST route for the signup endpoint that calls the UserSignUp function
+router.post('/login', login);
+router.post('/register', register);
+router.get('/verify', requireAuth, verifyToken);
 
-module.exports = router; // export the router object
+module.exports = router;
