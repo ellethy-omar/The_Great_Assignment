@@ -1,7 +1,8 @@
 console.log("main.js loaded")
 
 function initWebSocket() {
-    const ws = new WebSocket('ws://localhost:4123');
+    const token = localStorage.getItem('token');
+    const ws = new WebSocket(`ws://localhost:4123/?token=${encodeURIComponent(token)}`);  
   
     ws.onopen = () => {
       console.log('Connected to WebSocket');
@@ -17,7 +18,7 @@ function initWebSocket() {
     ws.onclose = (event) => {
       console.log('Disconnected:', event.data);
       // Attempt to reconnect after 5 seconds
-      setTimeout(initWebSocket, 5000);
+      // setTimeout(initWebSocket, 5000);
     };
   
     ws.onerror = (error) => {
@@ -30,3 +31,13 @@ function initWebSocket() {
 // Initialize the connection
 const ws = initWebSocket();
   
+document.addEventListener('DOMContentLoaded', () => {
+  const logoutButton = document.getElementById ('logoutButton');
+  if (logoutButton) {
+      logoutButton.addEventListener('click', () => {
+        console.log('Logging out');
+          localStorage.removeItem('token');
+          window.location.href = '../';
+      });
+  }
+});

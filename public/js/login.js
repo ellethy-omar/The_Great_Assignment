@@ -1,6 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const messageDiv = document.getElementById('message');
+    const token = localStorage.getItem('token');
+
+    console.log(token);
+
+    if(token) {
+        window.location.href = '/chat';
+    }
 
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -14,28 +21,28 @@ document.addEventListener('DOMContentLoaded', () => {
   
         try {
             const response = await fetch('http://localhost:4123/api/auth/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
     
             const result = await response.json();
             console.log(response);
     
             if (!response.ok) {
-            // Display error message from the server
-            messageDiv.style.color = 'red';
-            messageDiv.textContent = result.error || 'Registration failed';
+                // Display error message from the server
+                messageDiv.style.color = 'red';
+                messageDiv.textContent = result.error || 'Registration failed';
             } else {
-            // Registration successful
-            messageDiv.style.color = 'green';
-            messageDiv.textContent = result.message || 'Registration successful!';
-    
-            // Optionally, store the token and redirect to a protected page
-            localStorage.setItem('token', result.token);
-            window.location.href = '/chat';
+                // Registration successful
+                messageDiv.style.color = 'green';
+                messageDiv.textContent = result.message || 'Registration successful!';
+        
+                // Optionally, store the token and redirect to a protected page
+                localStorage.setItem('token', result.token);
+                window.location.href = '/chat';
             }
         } catch (error) {
             console.error('Error during registration:', error);
