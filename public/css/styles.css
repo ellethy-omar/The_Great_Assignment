@@ -126,20 +126,94 @@ main {
     font-size: 1.2em;
 }
 
-#contactsList {
-    list-style: none;
+.contacts-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #6c6c6c;
 }
 
-#contactsList li {
+.contacts-list, .friend-list {
+    list-style: none;
+    display: none;
+}
+
+.contacts-list.active, .friend-list.active {
+    display: block;
+}
+
+.contacts-list li , .friend-list li {
     padding: 10px;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid #6c6c6c;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
-#contactsList li:hover {
-    background-color: #f9f9f9;
+.contacts-list li:hover, .friend-list li :hover {
+    background-color: #acacac;
 }
+
+.accept-btn, .decline-btn {
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-right: 5px;
+}
+
+.accept-btn {
+    background-color: #4caf50;
+    color: #fff;
+}
+
+.decline-btn {
+    background-color: #f44336;
+    color: #fff;
+}
+
+.accept-btn:hover, .decline-btn:hover {
+    opacity: 0.8;
+}
+
+button {
+    cursor: pointer;
+}
+
+#friendOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
+    display: none; /* Hidden by default */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  /* Content box inside the overlay */
+  #friendOverlay .content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Input styles */
+  #friendOverlay input[type="text"] {
+    padding: 8px;
+    width: 200px;
+    margin-bottom: 10px;
+  }
+  
+  /* Button styles */
+  #friendOverlay button {
+    padding: 8px 12px;
+    margin: 5px;
+  }
 
 /* Main chat area */
 .chat-area {

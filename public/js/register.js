@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', () => {
           messageDiv.textContent = result.message || 'Registration successful!';
   
           // Optionally, store the token and redirect to a protected page
-          localStorage.setItem('token', result.token);
+          ocalStorage.setItem('token', result.token);
+          localStorage.setItem('user', JSON.stringify(result.user));
           window.location.href = '/chat';
         }
       } catch (error) {

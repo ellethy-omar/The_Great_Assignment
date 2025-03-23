@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const {   
     sendFriendRequest,
+    sendFriendRequestByUsername,
     acceptFriendRequest,
     declineFriendRequest,
     getPendingFriendRequests,
@@ -9,6 +10,7 @@ const {
 } = require('../controllers/friendController');
 
 router.post('/send-request', sendFriendRequest);
+router.post('/send-request-user', sendFriendRequestByUsername);
 router.put('/accept-request/:requestId', acceptFriendRequest);
 router.put('/decline-request/:requestId', declineFriendRequest);
 router.get('/pending-requests/:userId', getPendingFriendRequests);

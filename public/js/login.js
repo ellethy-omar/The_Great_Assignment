@@ -27,10 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 body: JSON.stringify(payload)
             });
-    
             const result = await response.json();
-            console.log(response);
-    
+            console.log(result.user);
+
             if (!response.ok) {
                 // Display error message from the server
                 messageDiv.style.color = 'red';
@@ -42,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
                 // Optionally, store the token and redirect to a protected page
                 localStorage.setItem('token', result.token);
+                localStorage.setItem('user', JSON.stringify(result.user));
                 window.location.href = '/chat';
             }
         } catch (error) {

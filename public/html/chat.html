@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Chat Application - Chat</title>
   <link rel="stylesheet" href="../css/styles.css">
+  <script src="../js/sw-register.js"></script>
 </head>
 <body>
   <header>
@@ -26,21 +27,33 @@
     </div>
   </header>
   <main>
-    <!-- Sidebar for contacts and friend list -->
     <aside class="sidebar">
-      <h2>Contacts</h2>
-      <ul id="contactsList">
-        <!-- Dynamically loaded contacts -->
-      </ul>
-      <button id="addFriendBtn">Add Friend</button>
+      <div class="contacts-header">
+        <h2 id = "Friends">Friends</h2>
+        <button id="showRequestsBtn">Friend Requests</button>
+        <button id="addFriendBtn">Add Friend</button>
+      </div>
+      <div id="friendOverlay">
+        <div class="content">
+          <h3>Add a Friend</h3>
+          <input type="text" id="friendUsername" placeholder="Enter friend's username">
+          <br>
+          <button id="submitFriendBtn">Submit</button>
+          <button id="closeOverlayBtn">Close</button>
+        </div>
+      </div>
+      <div>
+        <ul id="contactsList" class="contacts-list active">
+        </ul>
+        <ul id="friendRequests" class="friend-list">
+        </ul>
+      </div>
     </aside>
-    <!-- Main chat area -->
     <section class="chat-area">
       <div id="chatHeader">
         <h2>Chat with: <span id="activeFriend">Select a friend</span></h2>
       </div>
       <div id="chatWindow">
-        <!-- Chat messages will be dynamically loaded here -->
       </div>
       <div class="chat-input">
         <textarea id="messageInput" placeholder="Type your message here..."></textarea>
@@ -48,8 +61,7 @@
       </div>
     </section>
   </main>
-  <!-- External JavaScript files -->
-  <script src="js/main.js"></script>
-  <script src="js/chat.js"></script>
+  <script src="../js/main.js"></script>
+  <script src="../js/contacts.js"></script>
 </body>
 </html>

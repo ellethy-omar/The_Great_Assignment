@@ -3,7 +3,8 @@ const User = require("../models/User")
 // Send a friend request
 const sendFriendRequest = async (req, res) => {
     const { senderId, receiverId } = req.body;
-        if(!senderId || !receiverId){
+    console.log("This is sendFriendRequest",req.body);
+    if(!senderId || !receiverId){
         return res.status(400).json({ error: 'All fields are required' });
     }
 
@@ -45,6 +46,37 @@ const sendFriendRequest = async (req, res) => {
     } catch (error) {
         console.error('Error sending friend request:', error);
         res.status(500).json({ error: 'Server error while sending friend request' });
+    }
+};
+
+const sendFriendRequestByUsername = async (req, res) => {
+    const { senderId, username } = req.body;
+    if (!senderId || !username) {
+        return res.status(400).json({ error: 'Sender ID and username are required' });
+    }
+
+    try {
+        // Find the user by username
+        const receiver = await User.findOne({ username });
+
+        if (!receiver) {
+            return res.status(404).json({ error: 'User with the given username not found' });
+        }
+
+        // Use the existing sendFriendRequest logic
+        const receiverId = receiver._id.toString();
+        const requestBody = { senderId, receiverId };
+
+        // Simulate a request object for sendFriendRequest
+        
+        req.body = requestBody;
+        // console.log("This is sendFriendRequestByUsername", req.body);
+
+        // Call the existing sendFriendRequest function
+        await sendFriendRequest(req, res);
+    } catch (error) {
+        console.error('Error sending friend request by username:', error);
+        res.status(500).json({ error: 'Server error while sending friend request by username' });
     }
 };
 
@@ -122,6 +154,7 @@ const getFriendsList = async (req, res) => {
 
 module.exports = {
   sendFriendRequest,
+  sendFriendRequestByUsername,
   acceptFriendRequest,
   declineFriendRequest,
   getPendingFriendRequests,

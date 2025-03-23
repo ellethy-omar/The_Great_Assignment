@@ -16,7 +16,6 @@ const register = async (req, res) => {
     if(!validator.isStrongPassword(password)){
         return res.status(400).json({ error: 'Password is not strong enough' });
     }
-    
 
     try {
         // Check if a user already exists with this username or email
@@ -41,7 +40,7 @@ const register = async (req, res) => {
 
         res.status(201).json({
             message: 'User registered successfully',
-            data: savedUser,
+            user: savedUser,
             token
         });
     } catch (error) {
@@ -73,10 +72,11 @@ const login = async (req, res) => {
     
         // Generate JWT for the user
         const token = generateToken(user._id);
+        console.log(user);
     
         res.status(200).json({
             message: 'Login successful',
-            data: user,
+            user,
             token
         });
     } catch (error) {
@@ -85,9 +85,7 @@ const login = async (req, res) => {
     }
 };
 
-// In controllers/authController.js (or a new verify controller)
 const verifyToken = (req, res) => {
-    // If requireAuth passed, req.user will be available.
     res.status(200).json({ message: 'Token is valid', user: req.user });
 };
   
