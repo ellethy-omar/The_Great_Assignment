@@ -13,11 +13,11 @@
       <h1>Chat Application</h1>
       <input type="search" id="friendSearch" placeholder="Search friends...">
       <nav>
-        <button href="profile.html">
+        <!-- <button href="profile.html">
           <a>
             Profile
           </a>
-        </button>
+        </button> -->
         <button id="logoutButton">
           <a>
             Logout
@@ -42,7 +42,7 @@
           <button id="closeOverlayBtn">Close</button>
         </div>
       </div>
-      <div>
+      <div style="overflow-y: scroll;">
         <ul id="contactsList" class="contacts-list active">
         </ul>
         <ul id="friendRequests" class="friend-list">
@@ -57,11 +57,14 @@
       </div>
       <div class="chat-input">
         <textarea id="messageInput" placeholder="Type your message here..."></textarea>
-        <button id="sendMsgBtn">Send</button>
+        <button id="sendMsgBtn" disabled="true" class="disabled">Send</button>
       </div>
     </section>
   </main>
+  
   <script src="js/chat.js"></script>
+  <script src="js/friendRequests.js"></script>
   <script src="js/contacts.js"></script>
+  <script src="js/webSocket.js"></script>
 </body>
 </html>

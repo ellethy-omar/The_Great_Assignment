@@ -1,13 +1,12 @@
-// WebSockets/MainWebSocket.js
 const jwt = require("jsonwebtoken");
 require('dotenv').config();
-
+const Message  = require('../models/Message');
 // Global map to store connected clients per conversation
 // Example structure: { conversationId: Set of ws clients }
-if (!global.conversations) {
-    global.conversations = new Map();
+if (!global.clients) {
+    global.clients = new Map();
 }
-
+  
 const WebSocketRoutes = (ws, request) => {
     // Parse the URL to extract query parameters
     const urlObj = new URL(request.url, `http://${request.headers.host}`);
@@ -37,35 +36,13 @@ const WebSocketRoutes = (ws, request) => {
     // Handling based on path
     switch (path) {
         case '/':
-        console.log('Normal client connected');
-        ws.send(JSON.stringify({ message: 'Welcome to the lobby!' }));
+        global.clients.set(String(decoded.ID), ws);
+        // console.log(`Lobby client connected: User ${decoded.ID}`);
+        ws.send(JSON.stringify({ message: "Welcome to the lobby!" }));
         break;
         case '/chat':
-        if (!conversationId) {
-            console.log("Chat connection attempted without a conversationId.");
-            ws.close(1008, 'Conversation ID required');
-            return;
-        }
-        console.log(`Chat client connected to conversation ${conversationId} by user ${decoded.ID}`);
-        ws.send(JSON.stringify({ message: `Welcome to conversation ${conversationId}!` }));
-        
-        // Add ws client to a conversation-specific set
-        if (!global.conversations.has(conversationId)) {
-            global.conversations.set(conversationId, new Set());
-        }
-        global.conversations.get(conversationId).add(ws);
-
-        // Clean up on close
-        ws.on('close', () => {
-            console.log(`User ${decoded.ID} disconnected from conversation ${conversationId}`);
-            const clients = global.conversations.get(conversationId);
-            if (clients) {
-                clients.delete(ws);
-                if (clients.size === 0) {
-                    global.conversations.delete(conversationId);
-                }
-            }
-        });
+            console.log('Chat client connected');
+            break;
         break;
         case '/alerts':
             console.log('Alerts client connected');
@@ -78,30 +55,60 @@ const WebSocketRoutes = (ws, request) => {
     }
 
     // Generic message handler
-    ws.on('message', (message) => {
-        console.log(`Received on ${path}: ${message}`);
-        // For example, if the path is /chat, you might want to broadcast to all clients in that conversation:
-        if (path === '/chat' && conversationId) {
-        const clients = global.conversations.get(conversationId);
-        if (clients) {
-            // Broadcast message to all clients in the same conversation (except the sender, if desired)
-            clients.forEach(client => {
-            if (client.readyState === client.OPEN) {
-                client.send(JSON.stringify({
-                type: 'chatMessage',
-                data: {
-                    from: decoded.ID,
-                    message: message,
-                    conversationId: conversationId
-                }
+    ws.on('message', async (message) => {
+        let parsed;
+        try {
+          parsed = JSON.parse(message);
+        } catch (error) {
+          console.error('Error parsing message:', error);
+          return;
+        }
+        
+        switch (parsed.type) {
+          case 'markAsRead':
+            const { chatId, messageIds, readAt } = parsed.data;
+            console.log(`Marking messages as read in chat ${chatId} for messages:`, messageIds);
+            
+            try {
+                // Update the messages in your database that match the provided IDs
+                await Message.updateMany(
+                    { _id: { $in: messageIds } },
+                    { $set: { readAt: readAt } }
+                );
+
+                const messages = await Message.find({ _id: { $in: messageIds } });
+                const senderIds = [...new Set(messages.map(msg => msg.sender.toString()))];
+                
+                ws.send(JSON.stringify({
+                    type: 'markAsReadAck',
+                    data: { chatId, messageIds, readAt }
                 }));
+
+                senderIds.forEach(senderId => {
+                    if (global.clients && global.clients.has(String(senderId))) {
+                    const senderSocket = global.clients.get(String(senderId));
+                    senderSocket.send(JSON.stringify({
+                        type: 'markAsRead',
+                        data: { chatId, messageIds, readAt }
+                    }));
+                    }
+                });
+            } catch (err) {
+              console.error('Error updating messages as read:', err);
             }
-            });
+            
+            break;
+            
+          // Handle other message types...
+          default:
+            console.log(`Unhandled message type: ${parsed.type}`);
         }
-        } else {
-        // For other paths, simply echo back the message
-        ws.send(JSON.stringify({ echo: message }));
-        }
+    });
+      
+
+    // Clean up on close
+    ws.on('close', () => {
+        console.log(`User ${decoded.ID} disconnected from conversation ${conversationId}`);
     });
 };
 

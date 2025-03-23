@@ -32,24 +32,6 @@ const sendMessage = async (req, res) => {
     });
     // Save the message to MongoDB
     const savedMessage = await message.save();
-
-    // Notify the sender (confirmation that the message was sent)
-    if (global.clients && global.clients.has(String(senderId))) {
-        const senderSocket = global.clients.get(String(senderId));
-        senderSocket.send(JSON.stringify({
-            type: 'messageSent',
-            data: savedMessage
-        }));
-    }
-    // Notify the recipient if connected
-    if (global.clients && global.clients.has(String(receiverId))) {
-        const receiverSocket = global.clients.get(String(receiverId));
-        receiverSocket.send(JSON.stringify({
-            type: 'newMessage',
-            data: savedMessage
-        }));
-    }
-
     res.status(200).json({ message: 'Message sent', data: savedMessage });
 
   } catch (error) {

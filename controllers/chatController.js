@@ -31,20 +31,53 @@ const createChat = async (req, res) => {
 const getChatById = async (req, res) => {
   try {
     const { chatId } = req.params;
-    if(!chatId) {
+    if (!chatId) {
       return res.status(400).json({ error: 'Chat ID is required' });
     }
+
+    // Retrieve the chat with populated messages and participants
     const chat = await Chat.findById(chatId)
       .populate('participants', 'username email')
       .populate({
         path: 'messages',
         populate: { path: 'sender receiver', select: 'username email' }
       });
-    
+
     if (!chat) {
       return res.status(404).json({ error: 'Chat not found' });
     }
-    
+
+    // Assume authenticated user is added to req.user by middleware
+    const currentUserId = req.user._id;
+
+    // Filter unread messages for current user
+    const unreadMessages = chat.messages.filter(message => {
+      return String(message.receiver._id) === String(currentUserId) && !message.readAt;
+    });
+
+    // If there are unread messages, update their readAt field in the database.
+    if (unreadMessages.length > 0) {
+      const unreadMessageIds = unreadMessages.map(msg => msg._id);
+      await Message.updateMany(
+        { _id: { $in: unreadMessageIds } },
+        { $set: { readAt: new Date() } }
+      );
+
+      // Notify each sender that their message(s) have been read
+      const senderIds = [...new Set(unreadMessages.map(msg => msg.sender._id.toString()))];
+      senderIds.forEach(senderId => {
+        if (global.clients && global.clients.has(String(senderId))) {
+          const senderSocket = global.clients.get(String(senderId));
+          const now = new Date();
+          // then use it in the message:
+          senderSocket.send(JSON.stringify({
+              type: "markAsRead",
+              data: { chatId, readAt: now }
+          }));
+        }
+      });
+    }
+
     res.status(200).json(chat);
   } catch (error) {
     console.error('Error fetching chat:', error);
@@ -52,13 +85,14 @@ const getChatById = async (req, res) => {
   }
 };
 
+
 // Add a new message to a chat
 const addMessageToChat = async (req, res) => {
   try {
     const { chatId } = req.params;
     const { sender, receiver, content } = req.body;
 
-    if(!chatId || !sender || !receiver || !content) {
+    if (!chatId || !sender || !receiver || !content) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -83,6 +117,20 @@ const addMessageToChat = async (req, res) => {
       return res.status(404).json({ error: 'Chat not found' });
     }
 
+    // console.log(global);
+
+    // After saving the message in your HTTP handler:
+    if (global.clients && global.clients.has(String(receiver))) {
+      const receiverSocket = global.clients.get(String(receiver));
+      receiverSocket.send(
+        JSON.stringify({
+          type: "newMessage",
+          data: newMessage, // your saved message object
+          chatId
+        })
+      );
+    }
+
     res.status(200).json(chat);
   } catch (error) {
     console.error('Error adding message to chat:', error);
@@ -90,7 +138,6 @@ const addMessageToChat = async (req, res) => {
   }
 };
 
-// Get all chats for a specific user
 const getChatsByUser = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -114,6 +161,26 @@ const getChatsByUser = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+const markMessagesAsRead = async (req, res) => {
+  const { chatId } = req.params;
+  const currentUserId = req.user._id; // assuming you have authentication middleware
+
+  try {
+    // Update all messages in this chat that were sent to the user and are not yet read
+    const result = await Message.updateMany(
+      { _id: { $in: chat.messages }, receiver: currentUserId, readAt: null },
+      { $set: { readAt: new Date() } }
+    );
+    
+    // Optionally, fetch updated messages and return them
+    res.status(200).json({ message: 'Messages marked as read', result });
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    res.status(500).json({ error: 'Server error while marking messages as read' });
+  }
+};
+
 
 module.exports = {
     createChat,

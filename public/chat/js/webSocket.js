@@ -7,15 +7,33 @@ function initWebSocket() {
     };
   
     ws.onmessage = (event) => {
-      console.log('Received:', event.data);
-      // setTimeout(()=> {
-      //   ws.close(1000, "Testing");
-      // }, 5000)
+      const data = JSON.parse(event.data);
+      console.log(data);
+      
+      if (data.type === 'newMessage') {
+        const chatId = data.chatId;
+        const message = data.data;
+        console.log('New message in chat:', chatId, message);
+        
+        if (activeChat && activeChat.chatId === chatId) {
+          loadChat(chatId);
+          removeNotificationForChat(chatId);
+        } else {
+          showNotificationForChat(chatId);
+        }
+      }
+
+      if (data.type === "markAsRead" || data.type === "markAsReadAck") {
+        const { chatId, readAt } = data.data;
+        if (activeChat && activeChat.chatId === chatId) {
+          loadChat(chatId);
+        }
+      }
+      
     };
-  
+    
     ws.onclose = (event) => {
       console.log('Disconnected:', event.data);
-      // Attempt to reconnect after 5 seconds
       setTimeout(initWebSocket, 5000);
     };
   
