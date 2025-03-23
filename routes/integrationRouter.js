@@ -7,6 +7,7 @@ const authRoutes = require('./authRoutes');
 
 const friendRoutes = require('./friendRoutes');
 const messageRoutes = require('./messageRoutes');
+const chatRoutes = require('./chatRoutes');
 
 router.get("/", (req, res)=> {
     res.status(200).json(result = {
@@ -19,6 +20,6 @@ router.use('/auth', authRoutes);
 router.use(requireAuth);
 router.use('/friend', friendRoutes);
 router.use('/message', messageRoutes);
-
+router.use('/chat', chatRoutes);
 
 module.exports = router;

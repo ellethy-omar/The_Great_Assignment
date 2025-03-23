@@ -114,7 +114,7 @@ main {
 
 /* Sidebar for contacts */
 .sidebar {
-    width: 250px;
+    width: 300px;
     background-color: #fff;
     border-right: 1px solid #ddd;
     padding: 20px;
@@ -130,17 +130,19 @@ main {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 10px;
     margin-bottom: 15px;
-    border-bottom: 1px solid #6c6c6c;
 }
 
 .contacts-list, .friend-list {
     list-style: none;
     display: none;
+    border-top: none;
 }
 
 .contacts-list.active, .friend-list.active {
     display: block;
+    border-top: 1px solid #000000;
 }
 
 .contacts-list li , .friend-list li {
@@ -191,29 +193,29 @@ button {
     align-items: center;
     justify-content: center;
     z-index: 1000;
-  }
+}
   
-  /* Content box inside the overlay */
-  #friendOverlay .content {
+/* Content box inside the overlay */
+#friendOverlay .content {
     background: #fff;
     padding: 20px;
     border-radius: 5px;
     text-align: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
+}
   
-  /* Input styles */
-  #friendOverlay input[type="text"] {
+/* Input styles */
+#friendOverlay input[type="text"] {
     padding: 8px;
     width: 200px;
     margin-bottom: 10px;
-  }
+}
   
-  /* Button styles */
-  #friendOverlay button {
+/* Button styles */
+#friendOverlay button {
     padding: 8px 12px;
     margin: 5px;
-  }
+}
 
 /* Main chat area */
 .chat-area {
@@ -248,6 +250,11 @@ button {
     font-size: 0.8em;
     color: #888;
     margin-left: 5px;
+}
+
+.selectedFriend {
+    background-color: #000000;
+    color: #fff;
 }
 
 /* Chat input area */

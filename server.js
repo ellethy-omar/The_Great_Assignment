@@ -21,11 +21,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, 'public', 'html', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'login', 'login.html'));
 });
 
 app.get('/register', function(req, res) {
-  res.sendFile(path.join(__dirname, 'public', 'html', 'register.html'));
+  res.sendFile(path.join(__dirname, 'public', 'register', 'register.html'));
 });
 
 // Register The big API container
@@ -33,7 +33,7 @@ const integrationRoutes = require('./routes/integrationRouter')
 app.use('/api', integrationRoutes);
 
 app.get('/chat', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/html', 'chat.html'));
+  res.sendFile(path.join(__dirname, 'public/chat', 'chat.html'));
 });
 
 // Create an HTTP server using the Express app

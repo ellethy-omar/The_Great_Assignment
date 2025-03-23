@@ -1,5 +1,7 @@
 const FriendRequest = require('../models/Friend');
 const User = require("../models/User")
+const Chat = require('../models/Chat');
+
 // Send a friend request
 const sendFriendRequest = async (req, res) => {
     const { senderId, receiverId } = req.body;
@@ -56,23 +58,17 @@ const sendFriendRequestByUsername = async (req, res) => {
     }
 
     try {
-        // Find the user by username
         const receiver = await User.findOne({ username });
 
         if (!receiver) {
             return res.status(404).json({ error: 'User with the given username not found' });
         }
 
-        // Use the existing sendFriendRequest logic
         const receiverId = receiver._id.toString();
         const requestBody = { senderId, receiverId };
-
-        // Simulate a request object for sendFriendRequest
         
         req.body = requestBody;
-        // console.log("This is sendFriendRequestByUsername", req.body);
 
-        // Call the existing sendFriendRequest function
         await sendFriendRequest(req, res);
     } catch (error) {
         console.error('Error sending friend request by username:', error);
@@ -80,20 +76,35 @@ const sendFriendRequestByUsername = async (req, res) => {
     }
 };
 
-// Accept a friend request
 const acceptFriendRequest = async (req, res) => {
     const { requestId } = req.params;
     try {
-        const request = await FriendRequest.findById(requestId);
-        if (!request) return res.status(404).json({ error: 'Friend request not found' });
-        request.status = 'accepted';
-        const updatedRequest = await request.save();
-        res.status(200).json({ message: 'Friend request accepted', data: updatedRequest });
+      const request = await FriendRequest.findById(requestId);
+      if (!request) {
+        return res.status(404).json({ error: 'Friend request not found' });
+      }
+  
+      // Update friend request status
+      request.status = 'accepted';
+      const updatedRequest = await request.save();
+  
+      let chat = await Chat.findOne({
+        participants: { $all: [request.sender, request.receiver] }
+      });
+  
+      if (!chat) {
+        chat = new Chat({
+          participants: [request.sender, request.receiver]
+        });
+        await chat.save();
+      }
+  
+      res.status(200).json({ message: 'Friend request accepted and chat created', data: updatedRequest });
     } catch (error) {
-        console.error('Error accepting friend request:', error);
-        res.status(500).json({ error: 'Server error while accepting friend request' });
+      console.error('Error accepting friend request:', error);
+      res.status(500).json({ error: 'Server error while accepting friend request' });
     }
-};
+  };
 
 // Decline a friend request
 const declineFriendRequest = async (req, res) => {
@@ -140,15 +151,38 @@ const getAllFriendRequests = async (req, res) => {
 const getFriendsList = async (req, res) => {
     const { userId } = req.params;
     try {
-        const acceptedRequests = await FriendRequest.find({
-            status: 'accepted',
-            $or: [{ sender: userId }, { receiver: userId }]
+      // Find all accepted friend requests for the user
+      const acceptedRequests = await FriendRequest.find({
+        status: 'accepted',
+        $or: [{ sender: userId }, { receiver: userId }]
+      })
+      .populate('sender receiver', 'username email');
+  
+      // Map through each request to extract friend info and associated chat ID
+      const friendsWithChatIds = await Promise.all(
+        acceptedRequests.map(async (request) => {
+          // Determine the friend (the other party)
+          let friend;
+          if (request.sender._id.toString() === userId) {
+            friend = request.receiver;
+          } else {
+            friend = request.sender;
+          }
+          // Look for an existing chat between the current user and the friend
+          const chat = await Chat.findOne({
+            participants: { $all: [userId, friend._id] }
+          });
+          return {
+            friend,
+            chatId: chat ? chat._id : null
+          };
         })
-        .populate('sender receiver', 'username email');
-        res.status(200).json({ data: acceptedRequests });
+      );
+  
+      res.status(200).json({ data: friendsWithChatIds });
     } catch (error) {
-        console.error('Error fetching friends list:', error);
-        res.status(500).json({ error: 'Server error while retrieving friends list' });
+      console.error('Error fetching friends list:', error);
+      res.status(500).json({ error: 'Server error while retrieving friends list' });
     }
 };
 

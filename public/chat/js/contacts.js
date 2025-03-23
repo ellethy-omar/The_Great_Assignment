@@ -25,7 +25,7 @@ const loadPendingRequest = async () => {
         if (response.ok) {
             const result = await response.json();
             console.log(result);
-            toggleUI(result.data);
+            toggleContactsUI(result.data);
 
         } else {
             const result = await response.json();
@@ -43,7 +43,6 @@ const loadContactList = async() => {
     const token = localStorage.getItem('token');
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
-    console.log(user);
 
     try {
         const response = await fetch(`http://localhost:4123/api/friend/friends-list/${encodeURIComponent(user._id)}`, {
@@ -56,7 +55,7 @@ const loadContactList = async() => {
         if (response.ok) {
             const result = await response.json();
             console.log(result);
-            toggleUI(result.data)
+            toggleContactsUI(result.data)
         } else {
             const result = await response.json();
             console.error(result.error);
@@ -122,7 +121,7 @@ const declineRequest = async (requestId) => {
     }
 }
 
-function toggleUI(list) {
+function toggleContactsUI(list) {
     const requestsList = document.getElementById('friendRequests');
     const FriendsList = document.getElementById('contactsList');
     const titleFriends = document.getElementById('Friends');
@@ -183,8 +182,17 @@ function toggleUI(list) {
             friend.style.display = 'flex';
             friend.style.flexDirection = 'column';
 
-            const otherUser = item.sender._id === user._id ? item.receiver : item.sender;
+            const otherUser = item.friend;
             friend.innerHTML = otherUser.username;
+
+            friend.addEventListener('click', ()=> {
+                loadChat(item.chatId);
+                const allFriends = document.querySelectorAll('.selectedFriend');
+                allFriends.forEach(f => f.classList.remove('selectedFriend'));
+
+                friend.classList.add('selectedFriend');
+                document.getElementById('activeFriend').innerHTML = otherUser.username;
+            });
 
             FriendsList.appendChild(friend);
         });
@@ -198,12 +206,10 @@ const addFriendBtn = document.getElementById('addFriendBtn');
 const friendOverlay = document.getElementById('friendOverlay');
 const closeOverlayBtn = document.getElementById('closeOverlayBtn');
 
-// Show the overlay when "Add Friend" button is clicked
 addFriendBtn.addEventListener('click', () => {
     friendOverlay.style.display = 'flex';
 });
 
-// Hide the overlay when "Close" button is clicked
 closeOverlayBtn.addEventListener('click', () => {
     friendOverlay.style.display = 'none';
 });
@@ -238,3 +244,20 @@ document.getElementById('submitFriendBtn').addEventListener('click', async () =>
         console.error('Error:', error);
     }
 });
+
+const searchInput = document.getElementById('friendSearch');
+const contactsList = document.getElementById('contactsList');
+
+searchInput.addEventListener('input', () => {
+    const query = searchInput.value.toLowerCase();
+    const contacts = contactsList.getElementsByTagName('li');
+
+    Array.from(contacts).forEach(contact => {
+      const name = contact.textContent.toLowerCase();
+      if (name.includes(query)) {
+        contact.style.display = '';
+      } else {
+        contact.style.display = 'none';
+      }
+    });
+  });
