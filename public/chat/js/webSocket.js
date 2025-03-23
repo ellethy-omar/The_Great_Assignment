@@ -29,7 +29,11 @@ function initWebSocket() {
           loadChat(chatId);
         }
       }
-      
+
+      if(data.type === "isTyping") {
+        console.log(data.data);
+        isTypingIndicator(data.data.chatId, data.data.isTyping);
+      }
     };
     
     ws.onclose = (event) => {

@@ -158,16 +158,47 @@ const sendMessage = async (content) => {
     }
 }
 
+const messageInput = document.getElementById("messageInput");
+
+// A simple debounce function to avoid flooding the server with messages
+let typingTimeout;
+messageInput.addEventListener('input', () => {
+    // Notify the server that the user is typing
+    if(!activeChat)
+        return;
+
+    ws.send(JSON.stringify({
+        type: "isTyping",
+        data: {
+            activeChat,  // ensure activeChat is set properly
+            isTyping: true
+        }
+    }));
+
+    // Clear the previous timeout and set a new one to send a "stopped typing" message
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        ws.send(JSON.stringify({
+            type: "isTyping",
+            data: {
+                activeChat,
+                isTyping: false
+            }
+        }));
+    }, 3000); // 1 second after the last keystroke, consider that the user stopped typing
+});
+
+
 document.addEventListener('keyup', (event) => {
     if (event.key === 'Enter') {
-        const content = document.getElementById("messageInput").value;
+        const content = messageInput.value;
         sendMessage(content).then(() => {
-            document.getElementById("messageInput").value = "";
+            messageInput.value = "";
         });
     }
     
     if(event.key === 'Escape') {
-        document.getElementById("messageInput").value = "";
+        messageInput.value = "";
         activeChat = null;
         const chatWindow = document.getElementById('chatWindow');
     
@@ -182,8 +213,8 @@ document.addEventListener('keyup', (event) => {
 });
 
 document.getElementById("sendMsgBtn").addEventListener("click", () => {
-    const content = document.getElementById("messageInput").value;
+    const content = messageInput.value;
     sendMessage(content).then(() => {
-        document.getElementById("messageInput").value = "";
+        messageInput.value = "";
     });
 });

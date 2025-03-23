@@ -40,18 +40,10 @@ const WebSocketRoutes = (ws, request) => {
         // console.log(`Lobby client connected: User ${decoded.ID}`);
         ws.send(JSON.stringify({ message: "Welcome to the lobby!" }));
         break;
-        case '/chat':
-            console.log('Chat client connected');
-            break;
-        break;
-        case '/alerts':
-            console.log('Alerts client connected');
-            ws.send(JSON.stringify({ message: 'You are now subscribed to alerts!' }));
-            break;
         default:
             console.log(`Unknown path: ${path}`);
             ws.close(1000, 'Invalid path'); // Close the socket gracefully
-            return;
+        return;
     }
 
     // Generic message handler
@@ -99,8 +91,22 @@ const WebSocketRoutes = (ws, request) => {
             
             break;
             
-          // Handle other message types...
-          default:
+        case 'isTyping': 
+            console.log('User is typing:', parsed.data);
+
+            const { activeChat, isTyping } = parsed.data;
+            console.log(activeChat);
+
+            if (global.clients && global.clients.has(String(activeChat.receiver))) {
+                const receiverSocket = global.clients.get(String(activeChat.receiver));
+                receiverSocket.send(JSON.stringify({
+                    type: 'isTyping',
+                    data: { chatId: activeChat.chatId, isTyping }
+                }));
+            }
+            break;
+
+        default:
             console.log(`Unhandled message type: ${parsed.type}`);
         }
     });

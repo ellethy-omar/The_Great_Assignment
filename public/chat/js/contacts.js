@@ -15,6 +15,29 @@ function removeNotificationForChat(chatId) {
       }
     });
 }
+
+function isTypingIndicator(chatId, isTyping) {
+    const friendItems = document.querySelectorAll('#contactsList li');
+    friendItems.forEach((item) => {
+      if (item.getAttribute('data-chat-id') === chatId) {
+        if(isTyping === true) {
+            const indicator = item.querySelector('span');
+            if(indicator)
+                return;
+            
+            const typingIndicator = document.createElement('span');
+            typingIndicator.textContent = ' is typing a message ...';
+            // Optionally style the typing indicator
+            typingIndicator.style.fontStyle = 'italic';
+            typingIndicator.style.fontSize = '0.9em';
+            item.appendChild(typingIndicator);
+        }
+        else {
+            item.removeChild(item.lastChild);
+        }
+      }
+    });
+}
   
 
 function toggleContactsUI(list) {
@@ -87,10 +110,11 @@ function toggleContactsUI(list) {
             friend.addEventListener('click', () => {
                 loadChat(item.chatId);
                 activeChat = {
-                chatId: item.chatId,
-                sender: user._id,
-                receiver: otherUser._id
+                    chatId: item.chatId,
+                    sender: user._id,
+                    receiver: otherUser._id
                 };
+
 
                 const allFriends = document.querySelectorAll('.selectedFriend');
                 allFriends.forEach(f => f.classList.remove('selectedFriend'));
